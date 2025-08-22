@@ -34,11 +34,13 @@ ggplot(data = lake_ice, aes(x = ice_duration, y = lakeid)) +
 
 Mean ice cover duration in madison lake area by year
 ```{r}
+# calculate annual mean ice duration
 lake_ice_mean <- lake_ice %>%   
   group_by(year4) %>% 
   summarise(mean = mean(ice_duration, na.rm = TRUE)) %>% 
   ungroup()
 
+# plot it
 ggplot(data = lake_ice_mean, aes(x = year4, y = mean)) +
   geom_line() +
   labs(x = "Year",
@@ -66,4 +68,18 @@ ggplot(data = ice_weather, aes(x = mean_temp, y = mean)) +
        y = "Mean Ice Duration (Days)",
        title = "Mean Ice Duration by Mean Temperature in the Madison Lake Area")
 ```
-As
+As mean air temperature decreases, mean ice duration in the Madison Lake Area increases.
+
+explore thaw dates since 1970
+```{r}
+# filter after 1970 and pull out day of the year
+ice_1970 <- lake_ice %>% 
+  filter(year4 >= 1970) %>% 
+  mutate(ice_off = ymd(ice_off)) %>% 
+  mutate(ice_day_off = yday(ice_off))
+
+# plot
+ggplot(data = ice_1970, aes(x = year4, y = ice_day_off)) +
+  geom_line()
+```
+When ice begins showing in winter months, over time the thaw date has trended towards earlier in the year. This means ice duration has gotten shorter over time for ice starting between December and February. 
