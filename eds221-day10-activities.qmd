@@ -1,0 +1,69 @@
+---
+title: "data wrangling and viz practice"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+load packages
+```{r}
+library(tidyverse)
+library(here)
+library(lubridate)
+```
+
+
+read in data
+```{r}
+weather <- read_csv(here("data", "ntl20_v6.csv"), na = c("NA", "-999"))
+lake_ice <- read_csv(here("data", "ntl33_v7.csv"), na = c("NA", "-999"))
+```
+
+Visualization of ice duration across different lakes in Madison Lake Area.
+```{r}
+#lake_ice_mean <- lake_ice %>% 
+#  group_by(lakeid) %>% 
+#  summarise(mean = mean(ice_duration, na.rm = TRUE))
+
+ggplot(data = lake_ice, aes(x = ice_duration, y = lakeid)) + 
+  geom_violin() +
+  geom_jitter(position = position_jitter(5))+
+  labs(x = "Ice Duration (days)",
+       y = "Lake ID",
+       title = "Ice Duration on Madison Lake Area Lakes")
+```
+
+Mean ice cover duration in madison lake area by year
+```{r}
+lake_ice_mean <- lake_ice %>%   
+  group_by(year4) %>% 
+  summarise(mean = mean(ice_duration, na.rm = TRUE)) %>% 
+  ungroup()
+
+ggplot(data = lake_ice_mean, aes(x = year4, y = mean)) +
+  geom_line() +
+  labs(x = "Year",
+       y = "Mean Ice Duration (Days)",
+       title = "Mean Ice Duration in the Madison Lake Area")
+```
+Ice duration in the Madison Lake Area has a negative trend, indicating a decrease in ice duration over time. 
+
+Mean winter temperatures by mean ice duration
+```{r}
+# filter weather for winter months, and calculate mean
+weather_mean <- weather %>%
+  filter(month %in% c("1", "2", "12")) %>% 
+  group_by(year4) %>% 
+  summarise(mean_temp = mean(ave_air_temp_adjusted, na.rm = TRUE)) %>% 
+  ungroup()
+
+# join weather data with ice cover data
+ice_weather <- left_join(lake_ice_mean, weather_mean, by = "year4")
+
+# plot
+ggplot(data = ice_weather, aes(x = mean_temp, y = mean)) +
+  geom_point() +
+  labs(x = "Mean Temperature (C)",
+       y = "Mean Ice Duration (Days)",
+       title = "Mean Ice Duration by Mean Temperature in the Madison Lake Area")
+```
+As
